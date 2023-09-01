@@ -1,0 +1,265 @@
+# GENERATE TIME: Wed Aug 30 23:06:23 2023
+# CMD:
+# train.py -opt options/train/SRFormer/4xFrankendata_FullDegradation_SRFormer.yml --auto_resume
+
+name: 4xFrankendata_FullDegradation_SRFormer
+model_type: GeneralGANModel
+scale: 4
+num_gpu: auto
+manual_seed: 0
+
+# ----------------- options for synthesizing training data in ESWTNetModel ----------------- #
+# USM the ground-truth
+l1_gt_usm: False
+percep_gt_usm: False
+gan_gt_usm: False
+gt_usm: False
+high_order_degradation: True
+try_autoamp_g: True #enable amp Automatic mixed precision for network_g. if loss inf or nan or error just set to False
+try_autoamp_d: True #enable amp Automatic mixed precision for network_d. if loss inf or nan or error just set to False
+
+# the first degradation process
+resize_prob: [0.2, 0.7, 0.1]  # up, down, keep
+resize_range: [.25, 1.25]
+gaussian_noise_prob: 0.25
+noise_range: [0, 5]
+poisson_scale_range: [0, 0]
+gray_noise_prob: 0.5
+jpeg_range: [60, 100]
+
+# the second degradation process
+second_blur_prob: 0.1
+resize_prob2: [0.2, 0.7, 0.1]  # up, down, keep
+resize_range2: [.15, 1.5]
+gaussian_noise_prob2: 0.5
+noise_range2: [0, 12]
+poisson_scale_range2: [0, 0]
+gray_noise_prob2: 0.5
+jpeg_range2: [0, 95]
+
+gt_size: 192
+queue_size: 184
+
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: Frankendata
+    type: RealESRGANDataset
+    dataroot_gt: D:/Frankendata/HR
+    #dataroot_lq: D:/Frankendata/LR
+    meta_info: D:/Frankendata/metainfo.txt
+    io_backend:
+      type: disk
+
+    blur_kernel_size: 5
+    kernel_list:
+      [
+        "iso",
+        "aniso",
+        "generalized_iso",
+        "generalized_aniso",
+        "plateau_iso",
+        "plateau_aniso",
+      ]
+    kernel_prob: [0.65, 0.25, 0.12, 0.03, 0.12, 0.03]
+    sinc_prob: 0.1
+    blur_sigma: [0.2, 3]
+    betag_range: [0.5, 4]
+    betap_range: [1, 2]
+
+    blur_kernel_size2: 9
+    kernel_list2:
+      [
+        "iso",
+        "aniso",
+        "generalized_iso",
+        "generalized_aniso",
+        "plateau_iso",
+        "plateau_aniso",
+      ]
+    kernel_prob2: [0.65, 0.25, 0.12, 0.03, 0.12, 0.03]
+    sinc_prob2: 0.1
+    blur_sigma2: [0.2, 1.5]
+    betag_range2: [0.5, 4]
+    betap_range2: [1, 2]
+
+    final_sinc_prob: 0.2
+    gt_size: 192
+    use_hflip: true
+    use_rot: true
+    # data loader
+    num_worker_per_gpu: 6
+    batch_size_per_gpu: 4
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  # val_1:
+  #   name: MY
+  #   type: PairedImageDataset
+  #   dataroot_gt: datasets/DIV2K/DIV2K_valid_HR
+  #   dataroot_lq: datasets/DIV2K/DIV2K_valid_LR_bicubic/X4
+  #   io_backend:
+  #     type: disk
+
+  # val_2:
+  #   name: Set5
+  #   type: PairedImageDataset
+  #   dataroot_gt: datasets/Benchmark/HR/Set5/x4
+  #   dataroot_lq: datasets/Benchmark/LR/Set5/x4
+  #   io_backend:
+  #     type: disk
+
+  val:
+    name: validationLSDIRtrimmed
+    type: PairedImageDataset
+    dataroot_gt: tests/test_images/4xLSDIR_Trimmed_val/HR
+    dataroot_lq: tests/test_images/4xLSDIR_Trimmed_val/LR
+    io_backend:
+      type: disk
+# network structures
+network_g:
+  type: SRFormer
+  upscale: 4
+  in_chans: 3
+  img_size: 48
+  window_size: 24
+  img_range: 1.
+  depths: [6, 6, 6, 6, 6, 6]
+  embed_dim: 180
+  num_heads: [6, 6, 6, 6, 6, 6]
+  mlp_ratio: 2
+  upsampler: 'pixelshuffle'
+  resi_connection: '1conv'
+
+network_d:
+  type: UNetDiscriminatorSN
+  num_in_ch: 3
+  num_feat: 64
+  #skip_connection: True
+
+# path
+path:
+  pretrain_network_g: E:/traiNNer-redux-FJ/experiments/4xFrankendataPretrain_SRFormer/FrankendataPretrainer_SRFormer400K_g.pth
+  param_key_g: params_ema
+  strict_load_g: true
+  pretrain_network_d: E:/traiNNer-redux-FJ/experiments/4xFrankendataPretrain_SRFormer/FrankendataPretrainer_SRFormer400K_d.pth
+  param_key_d: params
+  strict_load_d: true
+  resume_state: ~
+
+# training settings
+train:
+  ema_decay: 0.999
+  optim_g:
+    type: AdamW
+    lr: !!float 1e-4
+    weight_decay: 0.01
+    betas: [0.9, 0.99]
+  optim_d:
+    type: AdamW
+    lr: !!float 1e-4
+    weight_decay: 0.01
+    betas: [0.9, 0.99]
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [250000, 400000, 450000, 475000] #at these iterations it will reduce the learning rate.
+    gamma: 0.5
+
+  total_iter: 500000
+  warmup_iter: -1  # no warm up
+
+# losses
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1
+    reduction: mean
+
+  # perceptual loss (content and style losses)
+  perceptual_opt:
+    type: PerceptualLoss
+    layer_weights:
+      # before relu
+      "conv1_2": 0.1
+      "conv2_2": 0.1
+      "conv3_4": 1
+      "conv4_4": 1
+      "conv5_4": 1
+    vgg_type: vgg19
+    use_input_norm: true
+    perceptual_weight: 0.8
+    style_weight: 0
+    range_norm: false
+    criterion: l1
+
+  # contextual loss
+  # contextual_opt:
+  #   type: ContextualLoss
+  #   loss_weight: 0.5
+  #   layer_weights:
+  #     "conv_3_2": 0.15
+  #     "conv_4_2": 0.15
+  #   max_1d_size: 64
+  #   distance_type: "cosine"
+  #   calc_type: "regular"
+  #   z_norm: false
+  #   crop_quarter: false
+  #   b: 1.0
+  #   band_width: 0.5
+  #   use_vgg: true
+  #   net: vgg19
+
+  color_opt:
+    type: ColorLoss
+    criterion: "l1"
+    loss_weight: 1
+
+  #avg_opt:
+    #type: AverageLoss
+    #criterion: "l1"
+    #loss_weight: 1.0
+    #scale: 4
+
+  # gan loss
+  gan_opt:
+    type: GANLoss
+    gan_type: vanilla
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: !!float 1e-1
+
+  net_d_iters: 1
+  net_d_init_iters: 0
+
+# validation settings
+val:
+  val_freq: 5000
+  save_img: true
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: false
+    ssim:
+      # Metric type. Usually the function name defined in the`basicsr/metrics` folder
+      type: calculate_ssim
+      #### The following arguments are flexible and can be obtained in the corresponding doc
+      # Whether to crop border during validation
+      crop_border: 4
+      # Whether to convert to Y(CbCr) for validation
+      test_y_channel: false
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: 1000
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: gloo
+  port: 29500
