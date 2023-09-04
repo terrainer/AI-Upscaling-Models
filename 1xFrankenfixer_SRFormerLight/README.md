@@ -1,5 +1,3 @@
-DUE TO GITHUB'S FILE SIZE LIMIT, PLEASE USE THE GOOGLE DRIVE LINK TO DOWNLOAD THE MODEL_G FILE  
-
 **Name:** 1xFrankenfixer_SRFormerLight  
 **License:** CC BY-SA  
 **Link:** [Google Drive](https://drive.google.com/drive/folders/1ZAcnZAVkgBitHzzwpGWBREpfm9hPznQJ?usp=drive_link)  
