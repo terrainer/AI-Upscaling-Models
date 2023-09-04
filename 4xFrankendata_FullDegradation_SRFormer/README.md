@@ -17,4 +17,5 @@
 **Pretrained_Model_G:** 4xFrankendataPretrainer_SRFormer400K_g.pth  
 **Pretrained_Model_D:** 4xFrankendataPretrainer_SRFormer400K_d.pth  
 
-**Description:** 4x realistic upscaler that may also work for general purpose usage. It was trained with OTF random degradation with a very low to very high range of degradations, including blur, noise, and compression. Trained with the same Frankendata dataset that I used for the pretrain model.  
+**Description:** 4x realistic upscaler that may also work for general purpose usage. It was trained with OTF random degradation with a very low to very high range of degradations, including blur, noise, and compression. Trained with the same Frankendata dataset that I used for the pretrain model.
+**DESIGNED FOR USE WITH [1xFRANKENFIXER_SRFORMERLIGHT](https://github.com/terrainer/AI-Upscaling-Models/tree/main/1xFrankenfixer_SRFormerLight)**
