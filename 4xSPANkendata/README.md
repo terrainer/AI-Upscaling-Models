@@ -1,6 +1,6 @@
-**Name:** 4xSPANkendata
+**Name:** 4xSPANkendata   
 **License:** CC BY-SA  
-**Link:** [Github[(https://github.com/terrainer/AI-Upscaling-Models/tree/main/4xSPANkendata)
+**Link:** [Github[(https://github.com/terrainer/AI-Upscaling-Models/tree/main/4xSPANkendata)    
 **Model Architecture:** SPAN
 **Scale:** 4x  
 **Purpose:** Intended as a pretrain model, can be used to upscale undegraded photos.  
