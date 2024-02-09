@@ -2,7 +2,7 @@
 **License:** CC BY-SA  
 **Link:** [Github](https://github.com/terrainer/AI-Upscaling-Models/tree/main/1xSPANGELION)  
 **Model Architecture:** SPAN   
-**Scale:** 4x  
+**Scale:** 1x  
 **Purpose:** For restoring the non blu-ray Evangelion episodes.  
 
 **Iterations:** ~75-90K  
