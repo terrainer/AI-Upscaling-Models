@@ -1,5 +1,5 @@
-**Name:** 2xSPANGELION
-**License:** CC BY-SA  
+**Name:** 2xSPANGELION 
+**License:** CC BY-SA   
 **Link:** [Github](https://github.com/terrainer/AI-Upscaling-Models/tree/main/2xSPANGELION)  
 **Model Architecture:** SPAN   
 **Scale:** 2x  
